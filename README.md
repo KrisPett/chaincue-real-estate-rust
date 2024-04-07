@@ -15,3 +15,5 @@ DATABASE_URL=postgres://admin:admin@localhost:5432/chaincue-real-estate-db
 
 - cargo install sea-orm-cli
 - sea-orm-cli migrate init
+
+https://www.sea-ql.org/SeaORM/docs/migration/setting-up-migration/

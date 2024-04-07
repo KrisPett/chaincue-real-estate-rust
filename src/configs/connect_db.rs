@@ -25,6 +25,8 @@ pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
         }
     })?;
 
+    db.
+
     Ok(db)
 }
 

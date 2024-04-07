@@ -10,3 +10,8 @@ touch .env
 ```
 DATABASE_URL=postgres://admin:admin@localhost:5432/chaincue-real-estate-db
 ```
+
+### Migrate
+
+- cargo install sea-orm-cli
+- sea-orm-cli migrate init

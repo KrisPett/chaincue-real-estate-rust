@@ -1,12 +1,16 @@
-use actix_web::{App, HttpServer, middleware,};
+use actix_web::{App, HttpServer, middleware};
 
+use configs::connect_db;
 use routes::home_page;
 use routes::houses_page;
 
 mod routes;
+mod configs;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    connect_db::connect_postgres().await?;
+
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
     HttpServer::new(move || {

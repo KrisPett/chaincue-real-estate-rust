@@ -28,4 +28,4 @@ pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
     Ok(db)
 }
 
-pub fn connect_redis() {}
+// pub fn connect_redis() {}

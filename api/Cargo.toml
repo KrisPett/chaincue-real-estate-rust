@@ -1,5 +1,5 @@
 [package]
-name = "chaincue-real-estate-rust"
+name = "chaincue-real-estate-rust-api"
 version = "0.1.0"
 edition = "2021"
 

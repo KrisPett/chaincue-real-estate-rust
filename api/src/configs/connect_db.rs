@@ -1,6 +1,9 @@
 use std::{env, io};
 use std::time::Duration;
+
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
+
+use migration::{Migrator, MigratorTrait};
 
 pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
     dotenv::dotenv().ok();
@@ -24,6 +27,7 @@ pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
             _ => io::Error::new(io::ErrorKind::Other, "Database error"),
         }
     })?;
+    Migrator::up(&db, None).await?;
 
     Ok(db)
 }

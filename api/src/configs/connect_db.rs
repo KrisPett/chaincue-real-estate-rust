@@ -2,8 +2,7 @@ use std::{env, io};
 use std::time::Duration;
 
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
-
-use migration::{Migrator, MigratorTrait};
+use migration::MigratorTrait;
 
 pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
     dotenv::dotenv().ok();
@@ -20,16 +19,17 @@ pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
         .sqlx_logging_level(log::LevelFilter::Info)
         .set_schema_search_path("public");
 
-    let db = Database::connect(opt).await.map_err(|err| {
-        match err {
-            DbErr::Conn(_) => io::Error::new(io::ErrorKind::ConnectionRefused, "Database connection refused"),
-            DbErr::Query(_) => io::Error::new(io::ErrorKind::Other, "Database query error"),
-            _ => io::Error::new(io::ErrorKind::Other, "Database error"),
-        }
-    })?;
-    Migrator::up(&db, None).await?;
+    let db = match Database::connect(opt).await {
+        Ok(db) => db,
+        Err(DbErr::Conn(_)) => return Err(io::Error::new(io::ErrorKind::ConnectionRefused, "Database connection refused")),
+        Err(DbErr::Query(_)) => return Err(io::Error::new(io::ErrorKind::Other, "Database query error")),
+        _ => return Err(io::Error::new(io::ErrorKind::Other, "Other database error")),
+    };
+
+    if let Err(err) = migration::Migrator::up(&db, None).await {
+        eprintln!("Migration error: {:?}", err);
+        return Err(io::Error::new(io::ErrorKind::Other, "Migration error"));
+    }
 
     Ok(db)
 }
-
-// pub fn connect_redis() {}

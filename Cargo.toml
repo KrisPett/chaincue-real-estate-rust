@@ -4,8 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
-members = ["api", "entities", "migration"]
+members = ["api", "migration"]
 
 [dependencies]
 chaincue-real-estate-rust-api = { path = "api" }
-entities = {path = "entities"}

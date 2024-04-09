@@ -746,7 +746,6 @@ name = "chaincue-real-estate-rust"
 version = "0.1.0"
 dependencies = [
  "chaincue-real-estate-rust-api",
- "entities",
 ]
 
 [[package]]
@@ -755,7 +754,6 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "dotenv",
- "entities",
  "env_logger",
  "log",
  "migration",
@@ -1012,14 +1010,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7268b386296a025e474d5140678f75d6de9493ae55a5d709eeb9dd08149945e1"
 dependencies = [
  "cfg-if",
-]
-
-[[package]]
-name = "entities"
-version = "0.1.0"
-dependencies = [
- "sea-orm",
- "serde",
 ]
 
 [[package]]

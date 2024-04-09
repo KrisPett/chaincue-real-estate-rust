@@ -1,3 +1,4 @@
+use sea_orm::{EnumIter, Iterable};
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -6,8 +7,6 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // Replace the sample below with your own migration scripts
-        todo!();
         manager
             .create_table(
                 Table::create()
@@ -26,21 +25,16 @@ impl MigrationTrait for Migration {
             )
             .await
     }
-
-    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // Replace the sample below with your own migration scripts
-        todo!();
-
-        manager
-            .drop_table(Table::drop().table(Post::Table).to_owned())
-            .await
-    }
 }
+
 
 #[derive(DeriveIden)]
 enum Post {
     Table,
     Id,
     Title,
+    #[sea_orm(iden = "text")] // Renaming the identifier
     Text,
+    Category,
 }
+

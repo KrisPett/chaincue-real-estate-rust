@@ -16,3 +16,4 @@ DATABASE_URL=postgres://admin:admin@localhost:5432/chaincue-real-estate-db
 - cargo install sea-orm-cli
 - sea-orm-cli migrate init
 - sea-orm-cli migrate generate "camel_case"
+- sea-orm-cli generate entity -u postgres://admin:admin@localhost:5432/chaincue-real-estate-db -o entity/src

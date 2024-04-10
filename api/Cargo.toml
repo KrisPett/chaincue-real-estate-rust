@@ -10,3 +10,4 @@ sea-orm = { version = "0.12", features = ["sqlx-postgres", "runtime-tokio-native
 log = "0.4.21"
 dotenv = "0.15.0"
 migration = { path = "../migration" }
+

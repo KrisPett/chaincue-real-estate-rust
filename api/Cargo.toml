@@ -10,4 +10,9 @@ sea-orm = { version = "0.12", features = ["sqlx-postgres", "runtime-tokio-native
 log = "0.4.21"
 dotenv = "0.15.0"
 migration = { path = "../migration" }
-
+entity = { path = "../entity" }
+r2d2 = "0.8.10"
+r2d2_postgres = "0.18.1"
+chrono = "0.4.37"
+uuid = { version = "1.8.0", features = ["v4", "fast-rng", "macro-diagnostics"] }
+serde = { version = "1.0.197", features = ["derive"] }

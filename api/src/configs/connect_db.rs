@@ -2,7 +2,6 @@ use std::{env, io};
 use std::time::Duration;
 
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
-
 use migration::MigratorTrait;
 
 pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
@@ -20,7 +19,7 @@ pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
         .sqlx_logging_level(log::LevelFilter::Info)
         .set_schema_search_path("public");
 
-    let db = Database::connect(opt).await.map_err(|err| {
+    let dbc = Database::connect(opt).await.map_err(|err| {
         match err {
             DbErr::Conn(_) => io::Error::new(io::ErrorKind::ConnectionRefused, "Database connection refused"),
             DbErr::Query(_) => io::Error::new(io::ErrorKind::Other, "Database query error"),
@@ -28,10 +27,10 @@ pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
         }
     })?;
 
-    migration::Migrator::up(&db, None).await.map_err(|err| {
+    migration::Migrator::up(&dbc, None).await.map_err(|err| {
         eprintln!("Migration error: {:?}", err);
         io::Error::new(io::ErrorKind::Other, "Migration error")
     })?;
 
-    Ok(db)
+    Ok(dbc)
 }

@@ -1,4 +1,4 @@
-use actix_web::{web, App, HttpServer, middleware};
+use actix_web::{App, HttpServer, middleware, web};
 use sea_orm::DatabaseConnection;
 
 use configs::connect_db;
@@ -7,19 +7,20 @@ use routes::houses_page;
 
 mod routes;
 mod configs;
+mod services;
 
 #[derive(Debug, Clone)]
 struct AppState {
-    conn: DatabaseConnection,
+    dbc: DatabaseConnection,
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let conn = connect_db::connect_postgres().await.unwrap();
+    let dbc = connect_db::connect_postgres().await.unwrap();
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
-    let state = AppState { conn };
+    let state = AppState { dbc };
 
     HttpServer::new(move || {
         App::new()

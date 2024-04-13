@@ -2,7 +2,7 @@ use actix_web::{Error, get, HttpResponse, Responder, web};
 use chrono::{DateTime, Utc};
 use sea_orm::ActiveModelTrait;
 use serde::{Deserialize, Serialize};
-use entity::countries::Model;
+
 use entity::sea_orm_active_enums::CountryName;
 
 use crate::AppState;
@@ -18,7 +18,7 @@ struct CountryResponse {
 
 #[get("/houses")]
 pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
-    let model = house_service::insert(data).await?;
+    let model = house_service::insert(&data.dbc).await?;
     let country_response = CountryResponse {
         id: model.id,
         created_at: DateTime::from(model.created_at),

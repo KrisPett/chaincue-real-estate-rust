@@ -8,6 +8,7 @@ use routes::houses_page;
 mod routes;
 mod configs;
 mod services;
+mod errors;
 
 #[derive(Debug, Clone)]
 struct AppState {

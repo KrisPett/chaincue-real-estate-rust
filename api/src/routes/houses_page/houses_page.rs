@@ -1,15 +1,15 @@
-use actix_web::{get, HttpResponse, Responder, web};
+use actix_web::{Error, get, HttpResponse, Responder, web};
 use sea_orm::ActiveModelTrait;
 
 use crate::AppState;
 use crate::services::house_service;
 
 #[get("/houses")]
-pub async fn get_hey(data: web::Data<AppState>) -> impl Responder {
+pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     let dto = house_service::insert(data).await?;
-
-    Ok(dto).expect("TODO: panic message");
-
+    println!("ss");
+    Ok(HttpResponse::Found()
+        .finish())
 }
 
 #[get("/houses2")]

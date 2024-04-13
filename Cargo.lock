@@ -763,6 +763,7 @@ dependencies = [
  "r2d2_postgres",
  "sea-orm",
  "serde",
+ "thiserror",
  "uuid",
 ]
 

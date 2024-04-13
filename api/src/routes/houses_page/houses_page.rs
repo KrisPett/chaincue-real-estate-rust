@@ -1,15 +1,31 @@
 use actix_web::{Error, get, HttpResponse, Responder, web};
+use chrono::{DateTime, Utc};
 use sea_orm::ActiveModelTrait;
+use serde::{Deserialize, Serialize};
+use entity::countries::Model;
+use entity::sea_orm_active_enums::CountryName;
 
 use crate::AppState;
 use crate::services::house_service;
 
+#[derive(Serialize, Deserialize)]
+struct CountryResponse {
+    id: String,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
+    country_name: CountryName,
+}
+
 #[get("/houses")]
 pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
-    let dto = house_service::insert(data).await?;
-    println!("ss");
-    Ok(HttpResponse::Found()
-        .finish())
+    let model = house_service::insert(data).await?;
+    let country_response = CountryResponse {
+        id: model.id,
+        created_at: DateTime::from(model.created_at),
+        updated_at: DateTime::from(model.updated_at),
+        country_name: model.country_name.unwrap(),
+    };
+    Ok(HttpResponse::Ok().json(country_response))
 }
 
 #[get("/houses2")]

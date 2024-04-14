@@ -11,7 +11,7 @@ use routes::houses_page;
 mod routes;
 mod configs;
 mod services;
-mod utilities;
+mod middlewares;
 
 #[derive(Debug, Clone)]
 struct AppState {

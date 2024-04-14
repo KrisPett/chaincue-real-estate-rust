@@ -7,7 +7,7 @@ use entity::countries;
 use entity::countries::Model;
 use entity::sea_orm_active_enums::CountryName;
 
-use crate::utilities::errors::CustomErrors;
+use crate::middlewares::errors::CustomErrors;
 
 pub async fn insert(dbc: &DatabaseConnection) -> Result<Model, Error> {
     let country = countries::ActiveModel {

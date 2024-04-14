@@ -5,7 +5,7 @@ use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
 use migration::MigratorTrait;
 
-use crate::utilities::errors::CustomErrors;
+use crate::middlewares::errors::CustomErrors;
 
 pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
     dotenv::dotenv().ok();

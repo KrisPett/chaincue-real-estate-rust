@@ -1,5 +1,6 @@
 use sea_orm::{EnumIter, Iterable};
 use sea_orm_migration::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::extension::postgres::Type;
 use crate::m20240410_170204_house::HouseTypes;

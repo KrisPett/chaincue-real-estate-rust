@@ -1,6 +1,4 @@
 use actix_web::{App, HttpServer, middleware, web};
-use actix_web::http::StatusCode;
-use actix_web::middleware::ErrorHandlers;
 use sea_orm::DatabaseConnection;
 
 use configs::connect_db;
@@ -12,6 +10,7 @@ mod routes;
 mod configs;
 mod services;
 mod middlewares;
+mod helpers;
 
 #[derive(Debug, Clone)]
 struct AppState {

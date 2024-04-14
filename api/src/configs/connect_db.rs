@@ -1,8 +1,11 @@
 use std::{env, io};
 use std::time::Duration;
 
-use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
+
 use migration::MigratorTrait;
+
+use crate::utilities::errors::CustomErrors;
 
 pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
     dotenv::dotenv().ok();
@@ -19,13 +22,9 @@ pub async fn connect_postgres() -> Result<DatabaseConnection, io::Error> {
         .sqlx_logging_level(log::LevelFilter::Info)
         .set_schema_search_path("public");
 
-    let dbc = Database::connect(opt).await.map_err(|err| {
-        match err {
-            DbErr::Conn(_) => io::Error::new(io::ErrorKind::ConnectionRefused, "Database connection refused"),
-            DbErr::Query(_) => io::Error::new(io::ErrorKind::Other, "Database query error"),
-            _ => io::Error::new(io::ErrorKind::Other, "Database error"),
-        }
-    })?;
+    let dbc = Database::connect(opt)
+        .await
+        .map_err(|err| CustomErrors::DatabaseError(err))?;
 
     migration::Migrator::up(&dbc, None).await.map_err(|err| {
         eprintln!("Migration error: {:?}", err);

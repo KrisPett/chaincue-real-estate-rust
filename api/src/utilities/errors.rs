@@ -29,16 +29,10 @@ impl ResponseError for CustomErrors {
     }
 
     fn error_response(&self) -> HttpResponse {
-        match self {
-            CustomErrors::DatabaseError(db_error) => eprintln!("Database error occurred: {}", db_error),
-            CustomErrors::ValidationError(err) => eprintln!("Validation error occurred: {}", err),
-            CustomErrors::AuthenticationError(err) => eprintln!("Authentication error occurred: {}", err),
-            CustomErrors::NotFoundError(err) => eprintln!("Resource not found error occurred: {}", err),
-        }
+        eprintln!("Error occurred: {}", self);
         HttpResponse::build(self.status_code()).body(self.to_string())
     }
 }
-
 
 impl From<CustomErrors> for io::Error {
     fn from(error: CustomErrors) -> Self {

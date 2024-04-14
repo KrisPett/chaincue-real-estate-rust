@@ -20,7 +20,7 @@ struct AppState {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let dbc = connect_db::connect_postgres().await.unwrap();
+    let dbc = connect_db::connect_postgres().await?;
     init_data(&dbc).await?;
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));

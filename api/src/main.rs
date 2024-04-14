@@ -1,14 +1,17 @@
 use actix_web::{App, HttpServer, middleware, web};
+use actix_web::http::StatusCode;
+use actix_web::middleware::ErrorHandlers;
 use sea_orm::DatabaseConnection;
 
 use configs::connect_db;
+use configs::init_data::init_data;
 use routes::home_page;
 use routes::houses_page;
 
 mod routes;
 mod configs;
 mod services;
-mod utilities ;
+mod utilities;
 
 #[derive(Debug, Clone)]
 struct AppState {
@@ -18,6 +21,7 @@ struct AppState {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let dbc = connect_db::connect_postgres().await.unwrap();
+    init_data(&dbc).await?;
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 

@@ -1,6 +1,8 @@
+use std::io;
+use std::io::ErrorKind;
+
+use actix_web::{http::StatusCode, HttpResponse};
 use actix_web::error::ResponseError;
-use actix_web::http::StatusCode;
-use actix_web::HttpResponse;
 use sea_orm::DbErr;
 use thiserror::Error;
 
@@ -34,5 +36,17 @@ impl ResponseError for CustomErrors {
             CustomErrors::NotFoundError(err) => eprintln!("Resource not found error occurred: {}", err),
         }
         HttpResponse::build(self.status_code()).body(self.to_string())
+    }
+}
+
+
+impl From<CustomErrors> for io::Error {
+    fn from(error: CustomErrors) -> Self {
+        match error {
+            CustomErrors::DatabaseError(err) => io::Error::new(ErrorKind::Other, format!("Database error: {}", err)),
+            CustomErrors::ValidationError(err) => io::Error::new(ErrorKind::InvalidInput, format!("Validation error: {}", err)),
+            CustomErrors::AuthenticationError(err) => io::Error::new(ErrorKind::PermissionDenied, format!("Authentication error: {}", err)),
+            CustomErrors::NotFoundError(err) => io::Error::new(ErrorKind::NotFound, format!("Resource not found: {}", err)),
+        }
     }
 }

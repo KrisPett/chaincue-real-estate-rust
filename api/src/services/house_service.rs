@@ -1,4 +1,4 @@
-use actix_web::{Error, Result};
+use std::io::Error;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
 use sea_orm::prelude::DateTimeWithTimeZone;
 use uuid::Uuid;
@@ -19,6 +19,6 @@ pub async fn insert(dbc: &DatabaseConnection) -> Result<Model, Error> {
 
     match country.insert(dbc).await {
         Ok(model) => Ok(model),
-        Err(err) => Err(Error::from(CustomErrors::DatabaseError(err))),
+        Err(err) => Err(Error::from(CustomErrors::DatabaseError(err)))
     }
 }

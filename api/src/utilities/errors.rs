@@ -1,8 +1,7 @@
 use std::io;
 use std::io::ErrorKind;
 
-use actix_web::{http::StatusCode, HttpResponse};
-use actix_web::error::ResponseError;
+use actix_web::{http::StatusCode, HttpResponse, ResponseError};
 use sea_orm::DbErr;
 use thiserror::Error;
 
@@ -18,29 +17,25 @@ pub enum CustomErrors {
     NotFoundError(String),
 }
 
-impl ResponseError for CustomErrors {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            CustomErrors::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            CustomErrors::ValidationError(_) => StatusCode::BAD_REQUEST,
-            CustomErrors::AuthenticationError(_) => StatusCode::UNAUTHORIZED,
-            CustomErrors::NotFoundError(_) => StatusCode::NOT_FOUND,
-        }
-    }
-
-    fn error_response(&self) -> HttpResponse {
-        eprintln!("Error occurred: {}", self);
-        HttpResponse::build(self.status_code()).body(self.to_string())
-    }
-}
-
 impl From<CustomErrors> for io::Error {
     fn from(error: CustomErrors) -> Self {
         match error {
-            CustomErrors::DatabaseError(err) => io::Error::new(ErrorKind::Other, format!("Database error: {}", err)),
-            CustomErrors::ValidationError(err) => io::Error::new(ErrorKind::InvalidInput, format!("Validation error: {}", err)),
-            CustomErrors::AuthenticationError(err) => io::Error::new(ErrorKind::PermissionDenied, format!("Authentication error: {}", err)),
-            CustomErrors::NotFoundError(err) => io::Error::new(ErrorKind::NotFound, format!("Resource not found: {}", err)),
+            CustomErrors::DatabaseError(err) => {
+                log::error!("Database error occurred: {}", err);
+                io::Error::new(ErrorKind::Other, format!("Database error: {}", err))
+            }
+            CustomErrors::ValidationError(err) => {
+                log::error!("Validation error occurred: {}", err);
+                io::Error::new(ErrorKind::InvalidInput, format!("Validation error: {}", err))
+            }
+            CustomErrors::AuthenticationError(err) => {
+                log::error!("Authentication error occurred: {}", err);
+                io::Error::new(ErrorKind::PermissionDenied, format!("Authentication error: {}", err))
+            }
+            CustomErrors::NotFoundError(err) => {
+                log::error!("Resource not found error occurred: {}", err);
+                io::Error::new(ErrorKind::NotFound, format!("Resource not found: {}", err))
+            }
         }
     }
 }

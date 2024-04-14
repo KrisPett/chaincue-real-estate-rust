@@ -1,0 +1,12 @@
+pub const URL_FRONT_IMAGE_1: &str = "https://images.chaincuet.com/logos/mansion1.jpeg";
+pub const URL_FRONT_IMAGE_2: &str = "https://images.chaincuet.com/logos/mansion2.jpg";
+pub const URL_FRONT_IMAGE_3: &str = "https://images.chaincuet.com/logos/mansion3.jpg";
+pub const URL_FRONT_IMAGE_4: &str = "https://images.chaincuet.com/logos/mansion4.jpg";
+pub const URL_FRONT_IMAGE_5: &str = "https://images.chaincuet.com/logos/mansion5.jpg";
+pub const URL_FRONT_IMAGE_6: &str = "https://images.chaincuet.com/logos/mansion7.jpeg";
+pub const URL_1: &str = "https://images.chaincuet.com/real-estate/apartment10.jpeg";
+pub const URL_2: &str = "https://images.chaincuet.com/real-estate/apartment11.jpg";
+pub const URL_3: &str = "https://images.chaincuet.com/real-estate/apartment12.jpg";
+pub const URL_4: &str = "https://images.chaincuet.com/real-estate/apartment13.jpg";
+pub const URL_5: &str = "https://images.chaincuet.com/real-estate/apartment14.jpg";
+pub const URL_6: &str = "https://images.chaincuet.com/real-estate/apartment15.jpg";

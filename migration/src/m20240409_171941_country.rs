@@ -1,9 +1,7 @@
 use sea_orm::{EnumIter, Iterable};
 use sea_orm_migration::prelude::*;
-use serde::{Deserialize, Serialize};
 
 use crate::extension::postgres::Type;
-use crate::m20240410_170204_house::HouseTypes;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -25,10 +23,10 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Countries::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(Countries::Id).text().not_null().primary_key())
+                    .col(ColumnDef::new(Countries::Id).string_len(255).not_null().primary_key())
                     .col(ColumnDef::new(Countries::CreatedAt).timestamp_with_time_zone().not_null())
                     .col(ColumnDef::new(Countries::UpdatedAt).timestamp_with_time_zone().not_null())
-                    .col(ColumnDef::new(Countries::CountryName).enumeration(Alias::new("country_name"), CountryName::iter()))
+                    .col(ColumnDef::new(Countries::CountryName).enumeration(Alias::new("country_name"), CountryName::iter()).not_null())
                     .to_owned())
             .await
     }

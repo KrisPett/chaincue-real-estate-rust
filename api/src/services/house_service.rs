@@ -14,7 +14,7 @@ pub async fn insert(dbc: &DatabaseConnection) -> Result<Model, Error> {
         id: Set(String::from(Uuid::new_v4())),
         created_at: Set(DateTimeWithTimeZone::from(chrono::Utc::now())),
         updated_at: Set(DateTimeWithTimeZone::from(chrono::Utc::now())),
-        country_name: Set(Some(CountryName::Spain)),
+        country_name: Set(CountryName::Spain),
     };
 
     match country.insert(dbc).await {

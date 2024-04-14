@@ -7,27 +7,21 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "houses")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false, column_type = "Text")]
+    #[sea_orm(primary_key, auto_increment = false)]
     pub id: String,
-    pub created_at: Option<DateTimeWithTimeZone>,
-    pub updated_at: Option<DateTimeWithTimeZone>,
-    #[sea_orm(column_type = "Text", nullable)]
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
     pub title: Option<String>,
-    #[sea_orm(column_type = "Text", nullable)]
     pub description: Option<String>,
-    #[sea_orm(column_type = "Text", nullable)]
     pub location: Option<String>,
-    #[sea_orm(column_type = "Text", nullable)]
     pub country: Option<String>,
-    #[sea_orm(column_type = "Text", nullable)]
     pub city: Option<String>,
     pub number_rooms: Option<i64>,
     pub beds: Option<i64>,
     pub price: Option<i64>,
-    #[sea_orm(column_type = "Text")]
-    pub src: String,
+    pub src: Option<String>,
     pub sold: Option<bool>,
-    pub house_types: Option<HouseTypes>,
+    pub house_types: HouseTypes,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

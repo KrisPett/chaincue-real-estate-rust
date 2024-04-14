@@ -6,13 +6,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "house_images")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false, column_type = "Text")]
+    #[sea_orm(primary_key, auto_increment = false)]
     pub id: String,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub url: Option<String>,
-    #[sea_orm(column_type = "Text")]
+    pub url: String,
     pub house_id: String,
 }
 

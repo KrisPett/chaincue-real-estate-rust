@@ -7,11 +7,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "countries")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false, column_type = "Text")]
+    #[sea_orm(primary_key, auto_increment = false)]
     pub id: String,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
-    pub country_name: Option<CountryName>,
+    pub country_name: CountryName,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -1,6 +1,5 @@
 use actix_web::{Error, get, HttpResponse, Responder, web};
 use chrono::{DateTime, Utc};
-use sea_orm::ActiveModelTrait;
 use serde::{Deserialize, Serialize};
 
 use entity::sea_orm_active_enums::CountryName;
@@ -23,7 +22,7 @@ pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
         id: model.id,
         created_at: DateTime::from(model.created_at),
         updated_at: DateTime::from(model.updated_at),
-        country_name: model.country_name.unwrap(),
+        country_name: model.country_name,
     };
     Ok(HttpResponse::Ok().json(country_response))
 }

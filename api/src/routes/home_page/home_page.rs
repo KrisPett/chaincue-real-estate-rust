@@ -1,7 +1,12 @@
-use actix_web::{Error, get, HttpResponse, web};
+use actix_web::{get, HttpResponse, web};
 use sea_orm::{ActiveEnum, DatabaseConnection, EntityTrait};
 use serde::{Deserialize, Serialize};
-use entity::countries::Entity as Country;
+
+use entity::countries::Entity as Countries;
+use entity::countries::Model as Country;
+use entity::houses::Entity as Houses;
+use entity::houses::Model as House;
+
 use crate::AppState;
 use crate::middlewares::errors::CustomErrors;
 
@@ -35,23 +40,29 @@ struct DTOBuilder {
 }
 
 #[get("/home")]
-pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
+pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, std::io::Error> {
     let dto = build_dto(&data.dbc).await?;
     Ok(HttpResponse::Ok().json(dto))
 }
 
-async fn build_dto(dbc: &DatabaseConnection) -> Result<HomePageDTO, Error> {
+async fn build_dto(dbc: &DatabaseConnection) -> Result<HomePageDTO, std::io::Error> {
     let mut dto_builder = DTOBuilder {
         countries: Vec::new(),
         houses: Vec::new(),
     };
 
-   let result= Country::find()
-       .all(dbc)
-       .await
-       .map_err(|err| std::io::Error::from(CustomErrors::DatabaseError(err)))?;
+    let countries = Countries::find()
+        .all(dbc)
+        .await
+        .map_err(|err| std::io::Error::from(CustomErrors::DatabaseError(err)))?;
 
-    dto_builder.countries = result;
+    let houses = Houses::find()
+        .all(dbc)
+        .await
+        .map_err(|err| std::io::Error::from(CustomErrors::DatabaseError(err)))?;
+
+    dto_builder.countries = countries;
+    dto_builder.houses = houses;
 
     Ok(to_home_page_dto(dto_builder))
 }
@@ -63,13 +74,13 @@ fn to_home_page_dto(dto_builder: DTOBuilder) -> HomePageDTO {
     }
 }
 
-fn to_country_dto(country: entity::countries::Model) -> CountryDTO {
+fn to_country_dto(country: Country) -> CountryDTO {
     CountryDTO {
         name: country.country_name.to_value()
     }
 }
 
-fn to_house_dto(house: entity::houses::Model) -> HouseDTO {
+fn to_house_dto(house: House) -> HouseDTO {
     HouseDTO {
         id: house.id,
         title: house.title.unwrap_or(String::new()),

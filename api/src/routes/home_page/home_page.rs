@@ -1,7 +1,7 @@
 use actix_web::{Error, get, HttpResponse, web};
 use sea_orm::{ActiveEnum, DatabaseConnection, EntityTrait};
 use serde::{Deserialize, Serialize};
-
+use entity::countries::Entity as Country;
 use crate::AppState;
 use crate::middlewares::errors::CustomErrors;
 
@@ -45,13 +45,12 @@ async fn build_dto(dbc: &DatabaseConnection) -> Result<HomePageDTO, Error> {
         countries: Vec::new(),
         houses: Vec::new(),
     };
-    // let countries = entity::countries::Entity::find().all(dbc).await
-    //     .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
 
-    let result = match entity::countries::Entity::find().all(dbc).await {
-        Ok(model) => Ok(model),
-        Err(err) => Err(std::io::Error::from(CustomErrors::DatabaseError(err)))
-    }?;
+   let result= Country::find()
+       .all(dbc)
+       .await
+       .map_err(|err| std::io::Error::from(CustomErrors::DatabaseError(err)))?;
+
     dto_builder.countries = result;
 
     Ok(to_home_page_dto(dto_builder))

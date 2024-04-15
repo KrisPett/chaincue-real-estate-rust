@@ -1,3 +1,6 @@
+use std::future::Future;
+use std::io::Error;
+
 use actix_web::{get, HttpResponse, web};
 use sea_orm::{ActiveEnum, DatabaseConnection, EntityTrait};
 use serde::{Deserialize, Serialize};
@@ -40,12 +43,33 @@ struct DTOBuilder {
 }
 
 #[get("/home")]
-pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, std::io::Error> {
-    let dto = build_dto(&data.dbc).await?;
+pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
+    log::info!("home");
+    // let dto = build_dto(&data.dbc, async |dto_builder| {
+    //     let countries = Countries::find()
+    //         .all(&data.dbc)
+    //         .await
+    //         .map_err(|err| Error::from(CustomErrors::DatabaseError(err)));
+    //     DTOBuilder {
+    //         countries: Vec::new(),
+    //         houses: Vec::new(),
+    //     };
+    // }).await?;
+
+    let dto = build_dto(&data.dbc, |dto_builder: &mut DTOBuilder| {
+        let future = async move {
+        };
+        future
+    }).await?;
+
     Ok(HttpResponse::Ok().json(dto))
 }
 
-async fn build_dto(dbc: &DatabaseConnection) -> Result<HomePageDTO, std::io::Error> {
+async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -> Result<HomePageDTO, Error>
+    where
+        F: FnOnce(&mut DTOBuilder) -> Fut,
+        Fut: Future<Output = ()>,
+{
     let mut dto_builder = DTOBuilder {
         countries: Vec::new(),
         houses: Vec::new(),
@@ -54,12 +78,12 @@ async fn build_dto(dbc: &DatabaseConnection) -> Result<HomePageDTO, std::io::Err
     let countries = Countries::find()
         .all(dbc)
         .await
-        .map_err(|err| std::io::Error::from(CustomErrors::DatabaseError(err)))?;
+        .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
 
     let houses = Houses::find()
         .all(dbc)
         .await
-        .map_err(|err| std::io::Error::from(CustomErrors::DatabaseError(err)))?;
+        .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
 
     dto_builder.countries = countries;
     dto_builder.houses = houses;

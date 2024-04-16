@@ -14,7 +14,7 @@ use entity::houses::Model as House;
 use crate::AppState;
 use crate::middlewares::errors::CustomErrors;
 use crate::services::{country_service, house_service};
-
+use crate::services::dto_builder_helpers::{country_helper, house_helper};
 #[derive(Serialize, Deserialize)]
 struct HomePageDTO {
     countries: Vec<CountryDTO>,
@@ -65,26 +65,18 @@ async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -
 
     additional_processing(dto_builder.clone());
 
-    // let countries = country_service::find_all(dbc).await?;
-    // let houses = house_service::find_all(dbc).await?;
+    let dbc1 = Arc::new(dbc.clone());
+    let dbc2 = Arc::new(dbc.clone());
 
-    // let update_countries = country_service::update_dto_builder_with_countries(&dbc, move |builder: &mut DTOBuilder, countries: &Vec<Country>| {
-    //     builder.countries = countries.clone()
-    // });
-    let dbc = Arc::new(dbc.clone());
-
-    country_service::update_dto_builder_with_countries(dbc.clone(), |builder: &mut DTOBuilder, countries: &Vec<Country>| {
-        builder.countries = countries.clone();
+    country_helper::update_dto_builder_with_countries(dbc1, |dto_builder: &mut DTOBuilder, countries| {
+        dto_builder.countries = countries.clone();
     })(&mut dto_builder).await;
 
-    // dto_builder.countries = countries;
-    // dto_builder.houses = houses;
-    // update_countries(&mut dto_builder).await;
-    Ok(to_home_page_dto(dto_builder))
-}
+    house_helper::update_dto_builder_with_houses(dbc2, |dto_builder: &mut DTOBuilder, houses| {
+        dto_builder.houses = houses.clone();
+    })(&mut dto_builder).await;
 
-fn set_countries(builder: &mut DTOBuilder, countries: &Vec<Country>) {
-    builder.countries = countries.clone();
+    Ok(to_home_page_dto(dto_builder))
 }
 
 fn to_home_page_dto(dto_builder: DTOBuilder) -> HomePageDTO {

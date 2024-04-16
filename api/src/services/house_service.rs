@@ -1,10 +1,13 @@
 use std::io::Error;
-use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
+
+use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 use sea_orm::prelude::DateTimeWithTimeZone;
 use uuid::Uuid;
 
 use entity::countries;
 use entity::countries::Model;
+use entity::houses::Model as House;
+use entity::prelude::Houses;
 use entity::sea_orm_active_enums::CountryName;
 
 use crate::middlewares::errors::CustomErrors;
@@ -21,4 +24,12 @@ pub async fn insert(dbc: &DatabaseConnection) -> Result<Model, Error> {
         Ok(model) => Ok(model),
         Err(err) => Err(Error::from(CustomErrors::DatabaseError(err)))
     }
+}
+
+pub async fn find_all(db_conn: &DatabaseConnection) -> Result<Vec<House>, Error> {
+    let houses = Houses::find()
+        .all(db_conn)
+        .await
+        .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
+    Ok(houses)
 }

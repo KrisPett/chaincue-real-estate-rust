@@ -12,6 +12,7 @@ use entity::houses::Model as House;
 
 use crate::AppState;
 use crate::middlewares::errors::CustomErrors;
+use crate::services::{country_service, house_service};
 
 #[derive(Serialize, Deserialize)]
 struct HomePageDTO {
@@ -43,59 +44,29 @@ struct DTOBuilder {
     houses: Vec<entity::houses::Model>,
 }
 
-// #[get("/home")]
-// pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
-//     log::info!("home");
-//     let dbc = &data.dbc.clone();
-//     let dto = build_dto(dbc, |mut dto_builder| async move {
-//         let countries = Countries::find()
-//             .all(dbc)
-//             .await
-//             .map_err(|err| Error::from(CustomErrors::DatabaseError(err)));
-//         println!("{:?}", dto_builder.countries)
-//     }).await?;
-//
-//     Ok(HttpResponse::Ok().json(dto))
-// }
-
 #[get("/home")]
 pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     log::info!("home");
     let dbc = &data.dbc.clone();
-    let dto = build_dto(dbc, Some(|dto_builder: DTOBuilder| async move {
-        let countries = Countries::find()
-            .all(dbc)
-            .await
-            .map_err(|err| Error::from(CustomErrors::DatabaseError(err)));
-        println!("{:?}", dto_builder.countries);
-        println!("{:?}", countries)
-    })).await?;
-
+    let dto = build_dto(dbc, |builder| async {}).await?;
     Ok(HttpResponse::Ok().json(dto))
 }
 
-async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: Option<F>) -> Result<HomePageDTO, Error>
-    where F: FnOnce(DTOBuilder) -> Fut, Fut: Future<Output=()>, {
+async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -> Result<HomePageDTO, Error>
+    where
+        F: FnOnce(DTOBuilder) -> Fut,
+        Fut: Future<Output=()>,
+{
     let mut dto_builder = DTOBuilder {
         countries: Vec::new(),
         houses: Vec::new(),
     };
 
-    match additional_processing {
-        Some(processor) => processor(dto_builder.clone()).await,
-        None => { }
-    }
+    additional_processing(dto_builder.clone());
 
-    let countries = Countries::find()
-        .all(dbc)
-        .await
-        .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
+    let countries = country_service::find_all(dbc).await?;
 
-    let houses = Houses::find()
-        .all(dbc)
-        .await
-        .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
-
+    let houses = house_service::find_all(dbc).await?;
 
     dto_builder.countries = countries;
     dto_builder.houses = houses;

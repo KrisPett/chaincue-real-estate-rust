@@ -48,12 +48,13 @@ struct DTOBuilder {
 #[get("/home")]
 pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     log::info!("home");
-    let dbc = &data.dbc.clone();
+    // let dbc = &data.dbc.clone();
+    let dbc = Arc::new(data.dbc.clone());
     let dto = build_dto(dbc, |builder| async {}).await?;
     Ok(HttpResponse::Ok().json(dto))
 }
 
-async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -> Result<HomePageDTO, Error>
+async fn build_dto<F, Fut>(dbc: Arc<DatabaseConnection>, additional_processing: F) -> Result<HomePageDTO, Error>
     where
         F: FnOnce(DTOBuilder) -> Fut,
         Fut: Future<Output=()>,
@@ -65,8 +66,8 @@ async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -
 
     additional_processing(dto_builder.clone());
 
-    let dbc1 = Arc::new(dbc.clone());
-    let dbc2 = Arc::new(dbc.clone());
+    let dbc1 = dbc.clone();
+    let dbc2 = dbc;
 
     country_helper::update_dto_builder_with_countries(dbc1, |dto_builder: &mut DTOBuilder, countries| {
         dto_builder.countries = countries.clone();

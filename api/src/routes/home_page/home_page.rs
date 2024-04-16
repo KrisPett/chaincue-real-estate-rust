@@ -1,5 +1,6 @@
 use std::future::Future;
 use std::io::Error;
+use std::sync::Arc;
 
 use actix_web::{get, HttpResponse, web};
 use sea_orm::{ActiveEnum, DatabaseConnection, EntityTrait};
@@ -64,14 +65,26 @@ async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -
 
     additional_processing(dto_builder.clone());
 
-    let countries = country_service::find_all(dbc).await?;
+    // let countries = country_service::find_all(dbc).await?;
+    // let houses = house_service::find_all(dbc).await?;
 
-    let houses = house_service::find_all(dbc).await?;
+    // let update_countries = country_service::update_dto_builder_with_countries(&dbc, move |builder: &mut DTOBuilder, countries: &Vec<Country>| {
+    //     builder.countries = countries.clone()
+    // });
+    let dbc = Arc::new(dbc.clone());
 
-    dto_builder.countries = countries;
-    dto_builder.houses = houses;
+    country_service::update_dto_builder_with_countries(dbc.clone(), |builder: &mut DTOBuilder, countries: &Vec<Country>| {
+        builder.countries = countries.clone();
+    })(&mut dto_builder).await;
 
+    // dto_builder.countries = countries;
+    // dto_builder.houses = houses;
+    // update_countries(&mut dto_builder).await;
     Ok(to_home_page_dto(dto_builder))
+}
+
+fn set_countries(builder: &mut DTOBuilder, countries: &Vec<Country>) {
+    builder.countries = countries.clone();
 }
 
 fn to_home_page_dto(dto_builder: DTOBuilder) -> HomePageDTO {

@@ -42,19 +42,34 @@ struct DTOBuilder {
     houses: Vec<entity::houses::Model>,
 }
 
+// #[get("/home")]
+// pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
+//     log::info!("home");
+//     let dto = build_dto(&data.dbc.clone(), |dto_builder| {
+//         let future = async move {
+//             let countries = Countries::find()
+//                 .all(&data.dbc.clone())
+//                 .await
+//                 .map_err(|err| Error::from(CustomErrors::DatabaseError(err)));
+//             dto_builder.countries = countries.unwrap_or_default();
+//         };
+//         future
+//     }).await?;
+//
+//     Ok(HttpResponse::Ok().json(dto))
+// }
+
 #[get("/home")]
 pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     log::info!("home");
-   let d = &data.dbc.clone();
-    let dto = build_dto(d, |dto_builder| {
-        let future = async move {
+    let dto = build_dto(&data.dbc.clone(), |dto_builder| {
+        async {
             let countries = Countries::find()
-                .all(d)
+                .all(&data.dbc.clone())
                 .await
                 .map_err(|err| Error::from(CustomErrors::DatabaseError(err)));
-            // dto_builder.countries = countries.unwrap_or_default();
-        };
-        future
+            println!("{:?}", countries.unwrap())
+        }
     }).await?;
 
     Ok(HttpResponse::Ok().json(dto))
@@ -62,15 +77,14 @@ pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
 
 async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -> Result<HomePageDTO, Error>
     where
-        F: FnOnce(&mut DTOBuilder) -> Fut,
+        F: FnOnce(&DTOBuilder) -> Fut,
         Fut: Future<Output=()>,
 {
-
     let mut dto_builder = DTOBuilder {
         countries: Vec::new(),
         houses: Vec::new(),
     };
-    additional_processing(&mut dto_builder).await;
+    additional_processing(&dto_builder).await;
 
     let countries = Countries::find()
         .all(dbc)
@@ -83,7 +97,7 @@ async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -
         .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
 
     dto_builder.countries = countries;
-    dto_builder.houses = houses;
+    // dto_builder.houses = houses;
 
     Ok(to_home_page_dto(dto_builder))
 }

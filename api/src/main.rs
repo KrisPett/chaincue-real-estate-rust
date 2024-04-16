@@ -1,4 +1,4 @@
-use actix_web::{App, HttpServer, middleware, web};
+use actix_web::{middleware, web, App, HttpServer};
 use sea_orm::DatabaseConnection;
 
 use configs::connect_db;
@@ -6,11 +6,11 @@ use configs::init_data::init_data;
 use routes::home_page;
 use routes::houses_page;
 
-mod routes;
 mod configs;
-mod services;
-mod middlewares;
 mod helpers;
+mod middlewares;
+mod routes;
+mod services;
 mod utilities;
 
 #[derive(Debug, Clone)]

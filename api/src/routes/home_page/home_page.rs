@@ -62,24 +62,29 @@ struct DTOBuilder {
 pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     log::info!("home");
     let dbc = &data.dbc.clone();
-    let dto = build_dto(dbc, |mut dto_builder| async move {
+    let dto = build_dto(dbc, Some(|dto_builder: DTOBuilder| async move {
         let countries = Countries::find()
             .all(dbc)
             .await
             .map_err(|err| Error::from(CustomErrors::DatabaseError(err)));
-        println!("{:?}", dto_builder.countries)
-    }).await?;
+        println!("{:?}", dto_builder.countries);
+        println!("{:?}", countries)
+    })).await?;
 
     Ok(HttpResponse::Ok().json(dto))
 }
 
-async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -> Result<HomePageDTO, Error>
+async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: Option<F>) -> Result<HomePageDTO, Error>
     where F: FnOnce(DTOBuilder) -> Fut, Fut: Future<Output=()>, {
     let mut dto_builder = DTOBuilder {
         countries: Vec::new(),
         houses: Vec::new(),
     };
-    additional_processing(dto_builder.clone()).await;
+
+    match additional_processing {
+        Some(processor) => processor(dto_builder.clone()).await,
+        None => { }
+    }
 
     let countries = Countries::find()
         .all(dbc)

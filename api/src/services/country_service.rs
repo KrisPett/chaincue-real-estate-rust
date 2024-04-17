@@ -14,4 +14,3 @@ pub async fn find_all(db_conn: &DatabaseConnection) -> Result<Vec<Country>, Erro
         .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
     Ok(countries)
 }
-

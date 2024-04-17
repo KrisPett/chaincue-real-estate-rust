@@ -67,11 +67,11 @@ async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -
 
     country_helper::update_dto_builder_with_countries(dbc, |dto_builder: &mut DTOBuilder, countries| {
         dto_builder.countries = countries.clone();
-    })(&mut dto_builder).await;
+    })(&mut dto_builder).await?;
 
     house_helper::update_dto_builder_with_houses(dbc, |dto_builder: &mut DTOBuilder, houses| {
         dto_builder.houses = houses.clone();
-    })(&mut dto_builder).await;
+    })(&mut dto_builder).await?;
 
     Ok(to_home_page_dto(dto_builder))
 }

@@ -13,8 +13,8 @@ use entity::houses::Model as House;
 
 use crate::AppState;
 use crate::middlewares::errors::CustomErrors;
-use crate::services::{country_service, house_service};
-use crate::services::dto_builder_helpers::{country_helper, house_helper};
+use crate::helpers::dto_builder_helpers::{country_helper, house_helper};
+
 #[derive(Serialize, Deserialize)]
 struct HomePageDTO {
     countries: Vec<CountryDTO>,

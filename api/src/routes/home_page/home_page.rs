@@ -1,18 +1,14 @@
 use std::future::Future;
 use std::io::Error;
-use std::sync::Arc;
 
 use actix_web::{get, HttpResponse, web};
-use sea_orm::{ActiveEnum, DatabaseConnection, EntityTrait};
+use sea_orm::{ActiveEnum, DatabaseConnection};
 use serde::{Deserialize, Serialize};
 
-use entity::countries::Entity as Countries;
 use entity::countries::Model as Country;
-use entity::houses::Entity as Houses;
 use entity::houses::Model as House;
 
 use crate::AppState;
-use crate::middlewares::errors::CustomErrors;
 use crate::helpers::dto_builder_helpers::{country_helper, house_helper};
 
 #[derive(Serialize, Deserialize)]
@@ -49,28 +45,28 @@ struct DTOBuilder {
 pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     log::info!("home");
     let dbc = &data.dbc.clone();
-    let dto = build_dto(&dbc, |builder| async {}).await?;
+    let dto = build_dto(&dbc, |_builder| async { Ok(()) }).await?;
     Ok(HttpResponse::Ok().json(dto))
 }
 
 async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -> Result<HomePageDTO, Error>
     where
         F: FnOnce(DTOBuilder) -> Fut,
-        Fut: Future<Output=()>,
+        Fut: Future<Output=Result<(), Error>>,
 {
     let mut dto_builder = DTOBuilder {
         countries: Vec::new(),
         houses: Vec::new(),
     };
 
-    additional_processing(dto_builder.clone());
+    additional_processing(dto_builder.clone()).await?;
 
     country_helper::update_dto_builder_with_countries(dbc, |dto_builder: &mut DTOBuilder, countries| {
-        dto_builder.countries = countries.clone();
+        dto_builder.countries = countries;
     })(&mut dto_builder).await?;
 
     house_helper::update_dto_builder_with_houses(dbc, |dto_builder: &mut DTOBuilder, houses| {
-        dto_builder.houses = houses.clone();
+        dto_builder.houses = houses;
     })(&mut dto_builder).await?;
 
     Ok(to_home_page_dto(dto_builder))

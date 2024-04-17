@@ -14,12 +14,12 @@ pub fn update_dto_builder_with_houses<'a, B, F>(
 ) -> impl FnOnce(&'a mut B) -> Pin<Box<dyn Future<Output=Result<(), Error>> + Send + 'a>> + 'a
     where
         B: 'a + Send,
-        F: Fn(&'a mut B, &Vec<House>) + Send + 'static,
+        F: Fn(&'a mut B, Vec<House>) + Send + 'static,
 {
     move |dto_builder: &'a mut B| {
         Box::pin(async move {
             let houses = find_all(dbc).await?;
-            set_houses(dto_builder, &houses);
+            set_houses(dto_builder, houses);
             Ok(())
         })
     }

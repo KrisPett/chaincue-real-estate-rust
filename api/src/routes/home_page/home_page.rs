@@ -1,15 +1,18 @@
 use std::future::Future;
 use std::io::Error;
+use std::sync::Arc;
 
 use actix_web::{get, HttpResponse, web};
 use sea_orm::{ActiveEnum, DatabaseConnection};
 use serde::{Deserialize, Serialize};
+use tokio::task;
 
 use entity::countries::Model as Country;
 use entity::houses::Model as House;
 
 use crate::AppState;
 use crate::helpers::dto_builder_helpers::{country_helper, house_helper};
+use futures::try_join;
 
 #[derive(Serialize, Deserialize)]
 struct HomePageDTO {
@@ -44,12 +47,13 @@ struct DTOBuilder {
 #[get("/home")]
 pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     log::info!("home");
-    let dbc = &data.dbc.clone();
+    // let dbc = &data.dbc.clone();
+    let dbc = Arc::new(data.dbc.clone());
     let dto = build_dto(&dbc, |_builder| async { Ok(()) }).await?;
     Ok(HttpResponse::Ok().json(dto))
 }
 
-async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -> Result<HomePageDTO, Error>
+async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing: F) -> Result<HomePageDTO, Error>
     where
         F: FnOnce(DTOBuilder) -> Fut,
         Fut: Future<Output=Result<(), Error>>,
@@ -62,12 +66,36 @@ async fn build_dto<F, Fut>(dbc: &DatabaseConnection, additional_processing: F) -
     additional_processing(dto_builder.clone()).await?;
 
     country_helper::update_dto_builder_with_countries(dbc, |dto_builder: &mut DTOBuilder, countries| {
+        println!("update_dto_builder_with_countries");
         dto_builder.countries = countries;
     })(&mut dto_builder).await?;
 
     house_helper::update_dto_builder_with_houses(dbc, |dto_builder: &mut DTOBuilder, houses| {
+        println!("update_dto_builder_with_houses");
         dto_builder.houses = houses;
     })(&mut dto_builder).await?;
+
+
+    // Spawn the update_dto_builder_with_countries task
+    // let countries_task = task::spawn(async move {
+    //     country_helper::update_dto_builder_with_countries(dbc, |dto_builder: &mut DTOBuilder, countries| {
+    //         dto_builder.countries = countries;
+    //     })(&mut dto_builder).await
+    // });
+    //
+    // // Spawn the update_dto_builder_with_houses task
+    // let houses_task = task::spawn(async move {
+    //     house_helper::update_dto_builder_with_houses(dbc, |dto_builder: &mut DTOBuilder, houses| {
+    //         dto_builder.houses = houses;
+    //     })(&mut dto_builder).await
+    // });
+
+    // Await both tasks to complete
+    // let (countries_result, houses_result) = try_join!(countries_task, houses_task)?;
+    //
+    // // Check if both tasks completed successfully
+    // countries_result?;
+    // houses_result?;
 
     Ok(to_home_page_dto(dto_builder))
 }

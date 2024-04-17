@@ -1,6 +1,7 @@
 use std::future::Future;
 use std::io::Error;
 use std::pin::Pin;
+use std::sync::Arc;
 
 use sea_orm::DatabaseConnection;
 
@@ -9,7 +10,7 @@ use entity::countries::Model as Country;
 use crate::services::country_service::find_all;
 
 pub fn update_dto_builder_with_countries<'a, B, F>(
-    dbc: &'a DatabaseConnection,
+    dbc: &'a Arc<DatabaseConnection>,
     set_countries: F,
 ) -> impl FnOnce(&'a mut B) -> Pin<Box<dyn Future<Output=Result<(), Error>> + Send + 'a>> + 'a
     where

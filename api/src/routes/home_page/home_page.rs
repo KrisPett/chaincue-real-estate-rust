@@ -1,19 +1,18 @@
+use std::convert::Infallible;
 use std::future::Future;
 use std::io::Error;
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use actix_web::{get, HttpResponse, web};
 use sea_orm::{ActiveEnum, DatabaseConnection};
 use serde::{Deserialize, Serialize};
+use tokio::task;
 
 use entity::countries::Model as Country;
 use entity::houses::Model as House;
 
 use crate::AppState;
 use crate::helpers::dto_builder_helpers::{country_helper, house_helper};
-
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use tokio::task;
 
 #[derive(Serialize, Deserialize)]
 struct HomePageDTO {
@@ -53,30 +52,30 @@ pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     Ok(HttpResponse::Ok().json(dto))
 }
 
-async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing: F) -> Result<HomePageDTO, Error>
-    where
-        F: FnOnce(Arc<DTOBuilder>) -> Fut,
-        Fut: Future<Output=Result<(), Error>>,
-{
-    let mut dto_builder = Arc::new(Mutex::new(DTOBuilder {
-        countries: Vec::new(),
-        houses: Vec::new(),
-    }));
-
-    additional_processing(dto_builder.clone()).await?;
-
-    country_helper::update_dto_builder_with_countries(dbc, |dto_builder: &mut DTOBuilder, countries| {
-        println!("update_dto_builder_with_countries");
-        dto_builder.countries = countries;
-    })(&mut dto_builder).await?;
-
-    house_helper::update_dto_builder_with_houses(dbc, |dto_builder: &mut DTOBuilder, houses| {
-        println!("update_dto_builder_with_houses");
-        dto_builder.houses = houses;
-    })(&mut dto_builder).await?;
-    let dto_builder_ref = dto_builder.lock().unwrap();
-    Ok(to_home_page_dto(dto_builder_ref))
-}
+// async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing: F) -> Result<HomePageDTO, Error>
+//     where
+//         F: FnOnce(Arc<Mutex<DTOBuilder>>) -> Fut,
+//         Fut: Future<Output=Result<(), Error>>,
+// {
+//     let mut dto_builder = Arc::new(Mutex::new(DTOBuilder {
+//         countries: Vec::new(),
+//         houses: Vec::new(),
+//     }));
+//
+//     // additional_processing(dto_builder.clone()).await?;
+//
+//     country_helper::update_dto_builder_with_countries(dbc, |dto_builder: &mut DTOBuilder, countries| {
+//         println!("update_dto_builder_with_countries");
+//         dto_builder.countries = countries;
+//     })(&mut dto_builder).await?;
+//
+//     // house_helper::update_dto_builder_with_houses(dbc, |dto_builder: &mut DTOBuilder, houses| {
+//     //     println!("update_dto_builder_with_houses");
+//     //     dto_builder.houses = houses;
+//     // })(&mut dto_builder).await?;
+//     let dto_builder_ref = dto_builder.lock().unwrap();
+//     Ok(to_home_page_dto(dto_builder_ref))
+// }
 
 // async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing: F) -> Result<HomePageDTO, Error>
 //     where
@@ -105,6 +104,30 @@ async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing:
 //     let dto_builder = dto_builder.lock().await;
 //     Ok(to_home_page_dto(dto_builder.clone()))
 // }
+
+async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing: F) -> Result<HomePageDTO, Error>
+    where
+        F: FnOnce(Arc<Mutex<DTOBuilder>>) -> Fut,
+        Fut: Future<Output=Result<(), Error>>,
+{
+    let mut dto_builder = Arc::new(Mutex::new(DTOBuilder {
+        countries: Vec::new(),
+        houses: Vec::new(),
+    }));
+
+    let mut dto_builder_clone = Arc::clone(&dto_builder);
+    let dbc_clone = Arc::clone(&dbc);
+
+    task::spawn(async move {
+        country_helper::update_dto_builder_with_countries(&dbc_clone, |dto_builder_mutex, countries| {
+            let mut dto_builder: MutexGuard<DTOBuilder> = dto_builder_mutex.lock().unwrap();
+            dto_builder.countries = countries;
+        })(&mut dto_builder_clone).await
+    }).await??;
+
+    let dto_builder_lock = dto_builder.lock().unwrap();
+    Ok(to_home_page_dto(dto_builder_lock.clone()))
+}
 
 fn to_home_page_dto(dto_builder: DTOBuilder) -> HomePageDTO {
     HomePageDTO {

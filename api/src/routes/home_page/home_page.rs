@@ -116,12 +116,22 @@ async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing:
     }));
 
     let mut dto_builder_clone = Arc::clone(&dto_builder);
-    let dbc_clone = Arc::clone(&dbc);
+    let dbc_clone1 = Arc::clone(&dbc);
+    let dbc_clone2 = Arc::clone(&dbc);
 
     task::spawn(async move {
-        country_helper::update_dto_builder_with_countries(&dbc_clone, |dto_builder_mutex, countries| {
+        country_helper::update_dto_builder_with_countries(&dbc_clone1, |dto_builder_mutex, countries| {
+            println!("update_dto_builder_with_countries");
             let mut dto_builder: MutexGuard<DTOBuilder> = dto_builder_mutex.lock().unwrap();
             dto_builder.countries = countries;
+        })(&mut dto_builder_clone).await
+    }).await??;
+
+    task::spawn(async move {
+        house_helper::update_dto_builder_with_houses(&dbc_clone2, |dto_builder_mutex, houses| {
+            println!("update_dto_builder_with_houses");
+            let mut dto_builder: MutexGuard<DTOBuilder> = dto_builder_mutex.lock().unwrap();
+            dto_builder.houses = houses;
         })(&mut dto_builder_clone).await
     }).await??;
 

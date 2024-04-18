@@ -46,19 +46,21 @@ struct DTOBuilder {
 pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     log::info!("home");
     let dbc = Arc::new(data.dbc.clone());
-    let dto = build_dto(&dbc, |_builder| async { Ok(()) }).await?;
+    let dto = build_dto(&dbc, |builder| async { Ok(()) }).await?;
     Ok(HttpResponse::Ok().json(dto))
 }
 
 async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing: F) -> Result<HomePageDTO, Error>
     where
-        F: FnOnce(Arc<Mutex<DTOBuilder>>) -> Fut,
+        F: FnOnce(&Arc<Mutex<DTOBuilder>>) -> Fut,
         Fut: Future<Output=Result<(), Error>>,
 {
     let dto_builder = Arc::new(Mutex::new(DTOBuilder {
         countries: Vec::new(),
         houses: Vec::new(),
     }));
+
+    additional_processing(&dto_builder).await?;
 
     let dto_builder_clone_for_countries = Arc::clone(&dto_builder);
     let dbc_clone_for_countries = Arc::clone(&dbc);
@@ -72,7 +74,7 @@ async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing:
 
     let dto_builder_clone_for_houses = Arc::clone(&dto_builder);
     let dbc_clone_for_houses = Arc::clone(&dbc);
-    let house_task =  tokio::spawn(async move {
+    let house_task = tokio::spawn(async move {
         house_helper::update_dto_builder_with_houses(&dbc_clone_for_houses, |dto_builder_mutex, houses| {
             println!("house_task");
             let mut dto_builder: MutexGuard<DTOBuilder> = dto_builder_mutex.lock().unwrap();

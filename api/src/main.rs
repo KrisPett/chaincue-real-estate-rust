@@ -5,6 +5,9 @@ use configs::connect_db;
 use configs::init_data::init_data;
 use routes::home_page;
 use routes::houses_page;
+use routes::house_page;
+use routes::account_page;
+use routes::add_property_page;
 
 mod configs;
 mod helpers;
@@ -33,6 +36,9 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .configure(houses_page::init_routes)
             .configure(home_page::init_routes)
+            .configure(house_page::init_routes)
+            .configure(account_page::init_routes)
+            .configure(add_property_page::init_routes)
     })
         .bind("127.0.0.1:8080")?
         .run()

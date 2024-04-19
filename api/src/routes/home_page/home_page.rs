@@ -64,7 +64,6 @@ async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing:
 
     let dto_builder_clone_for_countries = Arc::clone(&dto_builder);
     let dbc_clone_for_countries = Arc::clone(&dbc);
-
     let country_task = tokio::spawn(async move {
         country_helper::update_dto_builder_with_countries(&dbc_clone_for_countries, |dto_builder_mutex, countries| {
             println!("country_task");

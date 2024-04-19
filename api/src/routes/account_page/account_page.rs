@@ -13,6 +13,7 @@ use crate::AppState;
 use crate::helpers::dto_builder_helpers::{country_helper, house_helper};
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct AccountPageDTO {
     id: String,
 }

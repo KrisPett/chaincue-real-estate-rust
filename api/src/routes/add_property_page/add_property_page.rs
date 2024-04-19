@@ -13,17 +13,20 @@ use crate::AppState;
 use crate::helpers::dto_builder_helpers::{country_helper, house_helper};
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct HomePageDTO {
     countries: Vec<CountryDTO>,
     houses: Vec<HouseDTO>,
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CountryDTO {
     name: String,
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct HouseDTO {
     id: String,
     title: String,

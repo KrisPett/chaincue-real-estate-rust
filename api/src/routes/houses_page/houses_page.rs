@@ -13,17 +13,20 @@ use crate::AppState;
 use crate::helpers::dto_builder_helpers::{country_helper, house_helper};
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct HomePageDTO {
     countries: Vec<CountryDTO>,
     houses: Vec<HouseDTO>,
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CountryDTO {
     name: String,
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct HouseDTO {
     id: String,
     title: String,
@@ -44,7 +47,7 @@ struct DTOBuilder {
 
 #[get("/houses")]
 pub async fn get_houses_page(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
-    log::info!("houses");
+    log::info!("get_houses_page");
     let dbc = Arc::new(data.dbc.clone());
     let dto = build_dto(&dbc, |_builder| async { Ok(()) }).await?;
     Ok(HttpResponse::Ok().json(dto))

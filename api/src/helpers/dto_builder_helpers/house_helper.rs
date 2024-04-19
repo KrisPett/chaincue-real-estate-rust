@@ -15,7 +15,7 @@ pub fn update_dto_builder_with_houses<'a, B, F>(
 ) -> impl FnOnce(&'a Arc<Mutex<B>>) -> Pin<Box<dyn Future<Output=Result<(), Error>> + Send + 'a>> + 'a
     where
         B: 'a + Send,
-        F: Fn(&'a Arc<Mutex<B>>, Vec<House>) + Send + 'static,
+        F: Fn(&'a Arc<Mutex<B>>, Vec<House>) + Send + 'a,
 {
     move |dto_builder: &'a Arc<Mutex<B>>| {
         Box::pin(async move {

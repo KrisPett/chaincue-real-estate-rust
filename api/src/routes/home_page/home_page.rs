@@ -43,10 +43,10 @@ struct DTOBuilder {
 }
 
 #[get("/home")]
-pub async fn get_hey(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
+pub async fn get_home_page(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     log::info!("home");
     let dbc = Arc::new(data.dbc.clone());
-    let dto = build_dto(&dbc, |builder| async { Ok(()) }).await?;
+    let dto = build_dto(&dbc, |_builder| async { Ok(()) }).await?;
     Ok(HttpResponse::Ok().json(dto))
 }
 

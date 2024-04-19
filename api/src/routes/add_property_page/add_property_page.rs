@@ -30,7 +30,7 @@ pub async fn get_add_property_page(data: web::Data<AppState>) -> Result<HttpResp
     let dto = build_dto(&dbc, |_builder| async { Ok(()) }).await?;
     Ok(HttpResponse::Ok().json(dto))
 }
-
+// TODO
 async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing: F) -> Result<AddPropertyPageDTO, Error>
     where
         F: FnOnce(&Arc<Mutex<DTOBuilder>>) -> Fut,

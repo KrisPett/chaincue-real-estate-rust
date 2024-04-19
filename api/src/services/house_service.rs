@@ -33,3 +33,11 @@ pub async fn find_all(db_conn: &DatabaseConnection) -> Result<Vec<House>, Error>
         .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
     Ok(houses)
 }
+
+pub async fn find_by_id(db_conn: &DatabaseConnection, id: String) -> Result<House, Error> {
+    let house = Houses::find_by_id(id)
+        .one(db_conn)
+        .await
+        .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))??;
+    Ok(house)
+}

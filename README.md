@@ -1,4 +1,4 @@
-### Setup
+### Setup dev
 
 - sudo apt install libssl-dev
 - cargo run
@@ -9,6 +9,12 @@ touch .env
 
 ```
 DATABASE_URL=postgres://admin:admin@localhost:5432/chaincue-real-estate-db
+```
+
+###  Disable warnings
+
+```
+export RUSTFLAGS=-Awarnings cargo check
 ```
 
 ### Migrate

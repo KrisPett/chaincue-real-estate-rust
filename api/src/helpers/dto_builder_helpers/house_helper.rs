@@ -33,12 +33,13 @@ pub fn update_dto_builder_with_house_by_id<'a, B, F>(
 ) -> impl FnOnce(&'a Arc<Mutex<B>>) -> Pin<Box<dyn Future<Output=Result<(), Error>> + Send + 'a>> + 'a
     where
         B: 'a + Send,
-        F: Fn(&'a Arc<Mutex<B>>, House) + Send + 'a,
+        F: Fn(&'a Arc<Mutex<B>>, Option<House>) + Send + 'a,
 {
     move |dto_builder: &'a Arc<Mutex<B>>| {
         Box::pin(async move {
-            let houses = find_by_id(dbc, id).await?;
-            set_house(dto_builder, houses);
+            println!("test {}", id);
+            let house = find_by_id(dbc, id).await?;
+            set_house(dto_builder, house);
             Ok(())
         })
     }

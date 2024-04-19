@@ -3,12 +3,14 @@ use std::io::Error;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use actix_web::{get, HttpResponse, web};
+use actix_web::web::Path;
 use sea_orm::{ActiveEnum, DatabaseConnection};
 use serde::{Deserialize, Serialize};
+use uuid::Version::Nil;
 
+use entity::brokers::Model as Broker;
 use entity::countries::Model as Country;
 use entity::houses::Entity as House;
-use entity::brokers::Model as Broker;
 
 use crate::AppState;
 use crate::helpers::dto_builder_helpers::{country_helper, house_helper};
@@ -47,30 +49,31 @@ struct BrokerDTO {
 
 #[derive(Debug, Clone)]
 struct DTOBuilder {
-    house: entity::houses::Model,
+    house: Option<entity::houses::Model>,
+    broker: Option<Broker>
 }
 
 #[get("/house/{house_id}")]
-pub async fn get_house_page(data: web::Data<AppState>, path: web::Path<String>) -> Result<HttpResponse, Error> {
+pub async fn get_house_page(data: web::Data<AppState>, house_id: web::Path<String>) -> Result<HttpResponse, Error> {
     log::info!("get_house_page");
-    log::info!("{}" ,path);
+    log::info!("house_id: {}" ,house_id);
     let dbc = Arc::new(data.dbc.clone());
-    let dto = build_dto(&dbc, |_builder| async { Ok(()) }).await?;
+    let dto = build_dto(&dbc, house_id, |_builder| async { Ok(()) }).await?;
     Ok(HttpResponse::Ok().json(dto))
 }
 
-async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing: F) -> Result<HousePageDTO, Error>
+async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, house_id: Path<String>, additional_processing: F) -> Result<HousePageDTO, Error>
     where
         F: FnOnce(&Arc<Mutex<DTOBuilder>>) -> Fut,
         Fut: Future<Output=Result<(), Error>>,
 {
-    let dto_builder = Arc::new(Mutex::new(DTOBuilder { house: House }));
+    let dto_builder = Arc::new(Mutex::new(DTOBuilder { house: None, broker: None }));
 
     additional_processing(&dto_builder).await?;
 
     let dto_builder_clone = Arc::clone(&dto_builder);
     let dbc_clone = Arc::clone(&dbc);
-    house_helper::update_dto_builder_with_house_by_id(&dbc_clone, String::from("id"), |dto_builder_mutex, house| {
+    house_helper::update_dto_builder_with_house_by_id(&dbc_clone, house_id.to_string(), |dto_builder_mutex, house| {
         let mut dto_builder: MutexGuard<DTOBuilder> = dto_builder_mutex.lock().unwrap();
         dto_builder.house = house;
     })(&dto_builder_clone).await?;
@@ -79,20 +82,28 @@ async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, additional_processing:
     Ok(to_home_page_dto(dto_builder_lock.clone()))
 }
 
-
 fn to_home_page_dto(dto_builder: DTOBuilder) -> HousePageDTO {
+    let house = dto_builder.house.as_ref().unwrap();
     HousePageDTO {
-        id: dto_builder.house.id,
-        title: dto_builder.house.title.unwrap_or(String::new()),
-        location: dto_builder.house.location.unwrap_or(String::new()),
-        r#type: dto_builder.house.house_types.to_value(),
-        number_rooms: dto_builder.house.number_rooms.unwrap_or(0),
-        beds: dto_builder.house.beds.unwrap_or(0),
+        id: house.id.clone(),
+        title: dto_builder.house.as_ref().unwrap().title.as_ref().unwrap_or(&String::new()).clone(),
+        location: dto_builder.house.as_ref().unwrap().location.clone().unwrap_or(String::new()),
+        r#type: dto_builder.house.as_ref().unwrap().house_types.to_value(),
+        number_rooms: dto_builder.house.as_ref().unwrap().number_rooms.unwrap_or(0),
+        beds: dto_builder.house.as_ref().unwrap().beds.unwrap_or(0),
         dollar_price: "".to_string(),
         crypto_price: String::from("₿32.346"),
-        src: dto_builder.house.src.unwrap_or(String::new()),
+        src: dto_builder.house.as_ref().unwrap().src.clone().unwrap_or(String::new()),
         images: vec![],
-        broker: to_broker_dto(dto_builder.house.broker),
+        broker: to_broker_dto(dto_builder.broker.unwrap_or(Broker {
+            id: "".to_string(),
+            created_at: Default::default(),
+            updated_at: Default::default(),
+            name: "".to_string(),
+            phone_number: None,
+            email: None,
+            house_id: None,
+        })),
     }
 }
 

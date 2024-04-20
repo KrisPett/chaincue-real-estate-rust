@@ -9,6 +9,8 @@ touch .env
 
 ```
 DATABASE_URL=postgres://admin:admin@localhost:5432/chaincue-real-estate-db
+#DATABASE_URL=postgres://admin:admin@chaincue-real-estate-postgres-rs/chaincue-real-estate-db
+
 ```
 
 ###  Disable warnings

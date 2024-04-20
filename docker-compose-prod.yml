@@ -1,0 +1,45 @@
+# docker rmi backend-api-rust
+# docker build -t backend-api-rust .
+# docker compose -f docker-compose-prod.yml up
+# docker compose -f docker-compose-prod.yml down
+
+# docker run -it --rm backend-api-rust bash
+
+version: '3.9'
+services:
+  backend-api-rust:
+    container_name: backend-api
+    image: backend-api-rust:latest
+    ports:
+      - "80:8080"
+    depends_on:
+      - chaincue-real-estate-postgres
+      - redis
+    networks:
+      - chaincue-real-estate-network-rust
+
+  chaincue-real-estate-postgres:
+    container_name: chaincue-real-estate-postgres-rs
+    image: postgres:16.0
+    environment:
+      POSTGRES_DB: chaincue-real-estate-db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    networks:
+      - chaincue-real-estate-network-rust
+
+  redis:
+    container_name: chaincue-real-estate-redis-rs
+    image: redis:7.2.3
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass redis
+    networks:
+      - chaincue-real-estate-network-rust
+
+networks:
+  chaincue-real-estate-network-rust:
+    driver: bridge
+    name: chaincue-real-estate-network-rust

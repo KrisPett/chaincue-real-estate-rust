@@ -40,3 +40,5 @@ sea-orm-cli migrate up -u postgres://admin:admin@localhost:5432/chaincue-real-es
 ```
 sea-orm-cli generate entity --with-serde both -u postgres://admin:admin@localhost:5432/chaincue-real-estate-db -o entity/src
 ```
+
+TODO Dockerfile fix build to work with http 

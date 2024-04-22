@@ -16,12 +16,6 @@ WORKDIR /app/api
 RUN cargo build --release
 
 FROM rust:1.77.2
-#FROM alpine:3.19.1
-#FROM ubuntu:24.04
-#FROM golang:1.21.3-alpine
-#FROM rust:1.77.2-slim-buster
-#FROM debian:bullseye-slim
-#FROM debian:buster-slim
 
 COPY --from=build /app/target/release/chaincue-real-estate-rust-api .
 COPY ./.env ./.env

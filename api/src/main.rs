@@ -40,7 +40,7 @@ async fn main() -> std::io::Result<()> {
             .configure(account_page::init_routes)
             .configure(add_property_page::init_routes)
     })
-        .bind("127.0.0.1:8080")?
+        .bind(("0.0.0.0", 8080))?
         .run()
         .await
 }

@@ -76,7 +76,6 @@ kind: Service
 metadata:
   name: postgres-backend-service
 spec:
-#  clusterIP: None
   selector:
     app: postgres-backend
   ports:

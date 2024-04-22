@@ -1,5 +1,4 @@
-# docker rmi backend-api-rust
-# docker build -t backend-api-rust .
+# docker rmi backend-api-rust && docker build -t backend-api-rust .
 # docker compose -f docker-compose-prod.yml up
 # docker compose -f docker-compose-prod.yml down
 

@@ -15,6 +15,7 @@ mod middlewares;
 mod routes;
 mod services;
 mod utilities;
+mod tests;
 
 #[derive(Debug, Clone)]
 struct AppState {

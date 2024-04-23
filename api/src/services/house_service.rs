@@ -1,4 +1,5 @@
 use std::io::{Error, stdout};
+use futures::TryFutureExt;
 
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Related, Set};
 use sea_orm::prelude::DateTimeWithTimeZone;
@@ -8,6 +9,8 @@ use entity::countries;
 use entity::countries::Model;
 use entity::houses::Model as House;
 use entity::prelude::Houses;
+use entity::prelude::Brokers;
+use entity::prelude::HouseImages;
 use entity::sea_orm_active_enums::CountryName;
 
 use crate::middlewares::errors::CustomErrors;
@@ -35,21 +38,20 @@ pub async fn find_all(db_conn: &DatabaseConnection) -> Result<Vec<House>, Error>
 }
 
 pub async fn find_by_id(db_conn: &DatabaseConnection, id: String) -> Result<Option<House>, Error> {
-    let house = Houses::find_by_id(&id)
-        // .find_with_related(entity::house_images::Entity)
-        .one(db_conn)
-        .await
-        .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
-
-    let images = Houses::find_by_id(&id)
-        .left_join(entity::brokers::Entity)
-        .left_join(entity::house_images::Entity)
-        // .find_also_related(entity::house_images::Entity, entity::brokers::Entity)
-        // .find_with_related(entity::house_images::Entity, entity::brokers::Entity)
-        .one(db_conn)
-        .await
-        .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
+    let (house, images, broker) = tokio::try_join!(
+        Houses::find_by_id(&id).one(db_conn)
+            .map_err(|err| Error::from(CustomErrors::DatabaseError(err))),
+        Houses::find_by_id(&id).find_with_related(entity::house_images::Entity).all(db_conn)
+            .map_err(|err| Error::from(CustomErrors::DatabaseError(err))),
+        Houses::find_by_id(&id).find_with_related(entity::brokers::Entity).all(db_conn)
+            .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))
+    )?;
 
     println!("{:?}", images);
+    println!("{:?}", broker);
+    println!("{:?}", house);
+
     Ok(house)
 }
+
+

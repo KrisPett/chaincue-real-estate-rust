@@ -24,7 +24,7 @@ mod tests {
                 .service(house_page::get_house_page)
         )
             .await;
-        let path = String::from("/house/8caeae87-c736-4dca-98a7-9f92aa2f6a90");
+        let path = String::from("/house/9f33bc8f-945e-44ac-9ce3-11ecc0d93058");
         let req = test::TestRequest::get().uri(&path).to_request();
 
         // When

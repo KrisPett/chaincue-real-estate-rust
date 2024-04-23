@@ -23,8 +23,10 @@ spec:
     spec:
       containers:
         - name: chaincue-real-estate-rust
-          image: backend-api-rust:latest
-          imagePullPolicy: Never
+#          image: backend-api-rust:latest
+#          imagePullPolicy: Never
+          image: ghcr.io/krispett/chaincue-real-estate-rust:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           envFrom:

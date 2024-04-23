@@ -8,9 +8,10 @@ version: '3.9'
 services:
   backend-api-rust:
     container_name: backend-api
-    image: backend-api-rust:latest
+    image: ghcr.io/krispett/chaincue-real-estate-rust:latest
+#    image: backend-api-rust:latest
     ports:
-      - "80:8080"
+      - "8080:8080"
     depends_on:
       - chaincue-real-estate-postgres
       - redis

@@ -1,7 +1,7 @@
 use std::io::{Error, stdout};
 use futures::TryFutureExt;
 
-use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Related, Set};
+use sea_orm::{ActiveModelTrait, DatabaseConnection, DbBackend, EntityTrait, JoinType, QuerySelect, QueryTrait, Related, Set, RelationTrait, EntityOrSelect};
 use sea_orm::prelude::DateTimeWithTimeZone;
 use uuid::Uuid;
 
@@ -38,6 +38,9 @@ pub async fn find_all(db_conn: &DatabaseConnection) -> Result<Vec<House>, Error>
 }
 
 pub async fn find_by_id(db_conn: &DatabaseConnection, id: String) -> Result<Option<House>, Error> {
+
+    Houses::find_by_id(&id).one(db_conn)
+        .map_err(|err| Error::from(CustomErrors::DatabaseError(err)));
     let (house, images, broker) = tokio::try_join!(
         Houses::find_by_id(&id).one(db_conn)
             .map_err(|err| Error::from(CustomErrors::DatabaseError(err))),
@@ -53,5 +56,4 @@ pub async fn find_by_id(db_conn: &DatabaseConnection, id: String) -> Result<Opti
 
     Ok(house)
 }
-
 

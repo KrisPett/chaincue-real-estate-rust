@@ -11,6 +11,7 @@ use uuid::Version::Nil;
 use entity::brokers::Model as Broker;
 use entity::countries::Model as Country;
 use entity::houses::Entity as House;
+use entity::house_images::Model as HouseImage;
 
 use crate::AppState;
 use crate::helpers::dto_builder_helpers::{country_helper, house_helper};
@@ -114,24 +115,21 @@ fn to_home_page_dto(dto_builder: DTOBuilder) -> HousePageDTO {
     let house = dto_builder.house.as_ref().unwrap();
     HousePageDTO {
         id: house.id.clone(),
-        title: dto_builder.house.as_ref().unwrap().title.as_ref().unwrap_or(&String::new()).clone(),
-        location: dto_builder.house.as_ref().unwrap().location.clone().unwrap_or(String::new()),
-        r#type: dto_builder.house.as_ref().unwrap().house_types.to_value(),
-        number_rooms: dto_builder.house.as_ref().unwrap().number_rooms.unwrap_or(0),
-        beds: dto_builder.house.as_ref().unwrap().beds.unwrap_or(0),
+        title: house.title.as_ref().map_or(String::new(), |t| t.clone()),
+        location: house.location.clone().unwrap_or_else(|| String::new()),
+        r#type: house.house_types.to_value(),
+        number_rooms: house.number_rooms.unwrap_or(0),
+        beds: house.beds.unwrap_or(0),
         dollar_price: "".to_string(),
         crypto_price: String::from("₿32.346"),
-        src: dto_builder.house.as_ref().unwrap().src.clone().unwrap_or(String::new()),
-        images: vec![],
-        broker: to_broker_dto(dto_builder.broker.unwrap_or(Broker {
+        src: house.src.clone().unwrap_or_else(|| String::new()),
+        images: dto_builder.house_images.into_iter().map(to_house_images_dto).collect(),
+        broker: dto_builder.broker.map_or(BrokerDTO {
             id: "".to_string(),
-            created_at: Default::default(),
-            updated_at: Default::default(),
             name: "".to_string(),
-            phone_number: None,
-            email: None,
-            house_id: None,
-        })),
+            phone_number: String::new(),
+            email: String::new(),
+        }, to_broker_dto),
     }
 }
 
@@ -141,5 +139,12 @@ fn to_broker_dto(broker: Broker) -> BrokerDTO {
         name: broker.name,
         phone_number: broker.phone_number.unwrap_or(String::new()),
         email: broker.email.unwrap_or(String::new()),
+    }
+}
+
+fn to_house_images_dto(house_image: HouseImage) -> ImageDTO {
+    ImageDTO {
+        id: house_image.id,
+        url: house_image.url,
     }
 }

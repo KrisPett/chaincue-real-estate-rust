@@ -50,7 +50,8 @@ struct BrokerDTO {
 #[derive(Debug, Clone)]
 struct DTOBuilder {
     house: Option<entity::houses::Model>,
-    broker: Option<Broker>
+    broker: Option<Broker>,
+    house_images: Vec<entity::house_images::Model>,
 }
 
 #[get("/house/{house_id}")]
@@ -67,16 +68,40 @@ async fn build_dto<F, Fut>(dbc: &Arc<DatabaseConnection>, house_id: Path<String>
         F: FnOnce(&Arc<Mutex<DTOBuilder>>) -> Fut,
         Fut: Future<Output=Result<(), Error>>,
 {
-    let dto_builder = Arc::new(Mutex::new(DTOBuilder { house: None, broker: None }));
+    let dto_builder = Arc::new(Mutex::new(DTOBuilder { house: None, broker: None, house_images: vec![] }));
 
     additional_processing(&dto_builder).await?;
 
-    let dto_builder_clone = Arc::clone(&dto_builder);
-    let dbc_clone = Arc::clone(&dbc);
-    house_helper::update_dto_builder_with_house_by_id(&dbc_clone, house_id.to_string(), |dto_builder_mutex, house| {
-        let mut dto_builder: MutexGuard<DTOBuilder> = dto_builder_mutex.lock().unwrap();
-        dto_builder.house = house;
-    })(&dto_builder_clone).await?;
+    // let dto_builder_clone_for_house = Arc::clone(&dto_builder);
+    // let dbc_clone_for_house = Arc::clone(&dbc);
+    // let house_task = tokio::spawn(async move {
+    //     house_helper::update_dto_builder_with_broker_by_house_id(&dbc_clone_for_house, house_id.to_string(), |dto_builder_mutex, broker| {
+    //         let mut dto_builder: MutexGuard<DTOBuilder> = dto_builder_mutex.lock().unwrap();
+    //         dto_builder.broker = broker;
+    //     })(&dto_builder_clone_for_house).await;
+    // });
+    //
+    // let dto_builder_clone_for_broker = Arc::clone(&dto_builder);
+    // let dbc_clone_for_broker = Arc::clone(&dbc);
+    // let broker_task = tokio::spawn(async move {
+    //     house_helper::update_dto_builder_with_broker_by_house_id(&dbc_clone_for_broker, house_id.to_string(), |dto_builder_mutex, broker| {
+    //         let mut dto_builder: MutexGuard<DTOBuilder> = dto_builder_mutex.lock().unwrap();
+    //         dto_builder.broker = broker;
+    //     })(&dto_builder_clone_for_broker).await;
+    // });
+
+    let dto_builder_clone_for_house_images = Arc::clone(&dto_builder);
+    let dbc_clone_for_house_images = Arc::clone(&dbc);
+    let house_image_task = tokio::spawn(async move {
+        house_helper::update_dto_builder_with_house_images_by_house_id(&dbc_clone_for_house_images, house_id.to_string(), |dto_builder_mutex, house_images| {
+            let mut dto_builder: MutexGuard<DTOBuilder> = dto_builder_mutex.lock().unwrap();
+            dto_builder.house_images = house_images;
+        })(&dto_builder_clone_for_house_images).await
+    });
+    house_image_task.await??;
+
+    // house_task.await??;
+    // broker_task.await??;
 
     let dto_builder_lock = dto_builder.lock().unwrap();
     Ok(to_home_page_dto(dto_builder_lock.clone()))

@@ -62,6 +62,7 @@ async fn create_house(dbc: &DatabaseConnection, mut broker: ActiveModel, src: St
     let description = "Welcome to this bright and well-planned four-bedroom apartment with a balcony in a private location and a view of greenery! The residence features well-organized rooms and substantial windows in three different directions, providing a delightful infusion of natural light throughout the entire apartment. You'll find a spacious living room with comfortable seating areas and access to the pleasant balcony, offering sunny exposure and a lovely view of the green surroundings. Additionally, the apartment boasts a spacious kitchen with room for a dining area for the whole family, and here too, you can enjoy a pleasant view of the green area outside.\n\nThis well-planned apartment includes three good-sized bedrooms. Conveniently, for larger families, it offers both a fully tiled bathroom with a washing machine and a guest WC. Ample storage options are available through closets and a walk-in closet.\n\nYou are warmly welcome to visit!";
 
     let house = entity_helper::new_house(
+        String::new(),
         String::from(location),
         String::from(description),
         String::from(country),

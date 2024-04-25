@@ -56,7 +56,7 @@ struct DTOBuilder {
 }
 
 #[get("/house/{house_id}")]
-pub async fn get_house_page(data: web::Data<AppState>, house_id: web::Path<String>) -> Result<HttpResponse, Error> {
+pub async fn get_house_page(data: web::Data<AppState>, house_id: Path<String>) -> Result<HttpResponse, Error> {
     log::info!("get_house_page");
     log::info!("house_id: {}" ,house_id);
     let dbc = Arc::new(data.dbc.clone());

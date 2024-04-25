@@ -24,12 +24,12 @@ pub fn new_broker(name: String) -> entity::brokers::ActiveModel {
     }
 }
 
-pub fn new_house(location: String, description: String, country: String, src: String, city: String, price: i64, house_types: HouseTypes) -> entity::houses::ActiveModel {
+pub fn new_house(title: String, location: String, description: String, country: String, src: String, city: String, price: i64, house_types: HouseTypes) -> entity::houses::ActiveModel {
     entity::houses::ActiveModel {
         id: Set(Uuid::new_v4().to_string()),
         created_at: Set(DateTimeWithTimeZone::from(chrono::Utc::now())),
         updated_at: Set(DateTimeWithTimeZone::from(chrono::Utc::now())),
-        title: Set(None),
+        title: Set(Option::from(title)),
         description: Set(Option::from(description)),
         location: Set(Option::from(location)),
         country: Set(Option::from(country)),

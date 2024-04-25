@@ -1,22 +1,19 @@
 use std::io::Error;
 
 use futures::TryFutureExt;
-use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
-use sea_orm::prelude::DateTimeWithTimeZone;
-use uuid::Uuid;
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 
 use entity::brokers::Model as BrokerModel;
-use entity::countries;
-use entity::countries::Model as CountryModel;
 use entity::house_images::Model as HouseImagesModel;
 use entity::houses::Model as HouseModel;
 use entity::prelude::Houses;
-use entity::sea_orm_active_enums::CountryName;
+use entity::sea_orm_active_enums::HouseTypes;
 
+use crate::helpers::entity_helper;
 use crate::middlewares::errors::CustomErrors;
 
 pub trait HouseServiceI {
-    async fn insert_country(&self, dbc: &DatabaseConnection) -> Result<CountryModel, Error>;
+    async fn create_house(&self, dbc: &DatabaseConnection, title: &String, description: &String) -> Result<HouseModel, Error>;
     async fn find_all_houses(&self, db_conn: &DatabaseConnection) -> Result<Vec<HouseModel>, Error>;
     async fn find_house_by_id(&self, db_conn: &DatabaseConnection, id: &String) -> Result<Option<HouseModel>, Error>;
     async fn find_broker_by_house_id(&self, db_conn: &DatabaseConnection, house_id: &String) -> Result<Option<BrokerModel>, Error>;
@@ -26,18 +23,11 @@ pub trait HouseServiceI {
 pub struct HouseService;
 
 impl HouseServiceI for HouseService {
-    async fn insert_country(&self, dbc: &DatabaseConnection) -> Result<CountryModel, Error> {
-        let country = countries::ActiveModel {
-            id: Set(String::from(Uuid::new_v4())),
-            created_at: Set(DateTimeWithTimeZone::from(chrono::Utc::now())),
-            updated_at: Set(DateTimeWithTimeZone::from(chrono::Utc::now())),
-            country_name: Set(CountryName::Spain),
-        };
-
-        match country.insert(dbc).await {
-            Ok(model) => Ok(model),
-            Err(err) => Err(Error::from(CustomErrors::DatabaseError(err)))
-        }
+    async fn create_house(&self, dbc: &DatabaseConnection, title: &String, description: &String) -> Result<HouseModel, Error> {
+        let house = entity_helper::new_house(String::from(title), String::new(), String::from(description), String::new(), String::new(), String::new(), 0, HouseTypes::Condominium);
+        house.insert(dbc)
+            .await
+            .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))
     }
 
     async fn find_all_houses(&self, db_conn: &DatabaseConnection) -> Result<Vec<HouseModel>, Error> {

@@ -15,7 +15,7 @@ use entity::sea_orm_active_enums::CountryName;
 
 use crate::middlewares::errors::CustomErrors;
 
-pub trait HouseOperations {
+pub trait HouseServiceI {
     async fn insert_country(&self, dbc: &DatabaseConnection) -> Result<CountryModel, Error>;
     async fn find_all_houses(&self, db_conn: &DatabaseConnection) -> Result<Vec<HouseModel>, Error>;
     async fn find_house_by_id(&self, db_conn: &DatabaseConnection, id: &String) -> Result<Option<HouseModel>, Error>;
@@ -25,7 +25,7 @@ pub trait HouseOperations {
 
 pub struct HouseService;
 
-impl HouseOperations for HouseService {
+impl HouseServiceI for HouseService {
     async fn insert_country(&self, dbc: &DatabaseConnection) -> Result<CountryModel, Error> {
         let country = countries::ActiveModel {
             id: Set(String::from(Uuid::new_v4())),

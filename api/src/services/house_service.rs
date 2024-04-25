@@ -37,18 +37,11 @@ pub async fn find_all(db_conn: &DatabaseConnection) -> Result<Vec<House>, Error>
     Ok(houses)
 }
 
-pub async fn find_by_id(db_conn: &DatabaseConnection, id: String) -> Result<Option<House>, Error> {
-    let (house, images, broker) = tokio::try_join!(
-        Houses::find_by_id(&id).one(db_conn)
-            .map_err(|err| Error::from(CustomErrors::DatabaseError(err))),
-        find_house_images_by_house_id(db_conn, &id),
-        find_broker_by_house_id(db_conn, &id)
-    )?;
-
-    println!("{:?}", images);
-    println!("{:?}", broker);
-    println!("{:?}", house);
-
+pub async fn find_by_id(db_conn: &DatabaseConnection, id: &String) -> Result<Option<House>, Error> {
+    let house = Houses::find_by_id(id)
+        .one(db_conn)
+        .await
+        .map_err(|err| Error::from(CustomErrors::DatabaseError(err)))?;
     Ok(house)
 }
 
